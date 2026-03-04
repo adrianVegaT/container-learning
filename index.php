@@ -1,6 +1,6 @@
 <?php
 
-include 'container.php';
+include 'container-2.php';
 include 'database.php';
 
 // $container = new Container();
@@ -13,12 +13,14 @@ include 'database.php';
 
 $container = new Container();
 
-// $container->bind('database', function(){
-//     return new Database();
-// });
+$container->singleton('database', function(){
+    return new Database();
+});
 
-// $db1 = $container->make('database');
-// $db2 = $container->make('database');
+$db1 = $container->make('database');
+$db2 = $container->make('database');
+
+var_dump($db1 === $db2);
 
 // $closure = fn() => 'Hola mundo';
 // $string = 'Hola mundo';
@@ -26,16 +28,16 @@ $container = new Container();
 // var_dump($closure instanceof Closure);
 // var_dump($string instanceof Closure);
 
-class Logger{
-    public function log($message){
-        echo "[LOG] $message \n";
-    }
-}
+// class Logger{
+//     public function log($message){
+//         echo "[LOG] $message \n";
+//     }
+// }
 
-$container->bind('logger', function(){
-    return new Logger;
-});
+// $container->bind('logger', function(){
+//     return new Logger;
+// });
 
-$logger = $container->make('logger');
+// $logger = $container->make('logger');
 
-$logger->log("mensaje en el log modificado");
+// $logger->log("mensaje en el log modificado");

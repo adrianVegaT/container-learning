@@ -9,7 +9,7 @@ class Database
         $this->connection = new PDO(
             'mysql:host=localhost;dbname=test',
             'root',
-            'password'
+            ''
         );
 
         echo "Database connection established.\n";
