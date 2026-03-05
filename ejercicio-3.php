@@ -1,10 +1,5 @@
 <?php
 
-/**
- * Este container tendra la funcionalidad de Reflector 
- * para resolver las dependencias de las clases automaticamente (Auto-resolución)
- */
-
 class Container
 {
     private $bindings = [];
@@ -23,38 +18,40 @@ class Container
 
     public function resolve($class)
     {
-        if (isset($this->bindings[$class])) {
-            $resolver = $this->bindings[$class];
-            return $resolver($this);
-        }
-
+        //instaciar la clase reflexion
         $reflector = new ReflectionClass($class);
 
+        //verificar si la clase a resolver tiene constructor
         $constructor = $reflector->getConstructor();
 
+        //si no tiene
         if (!$constructor) {
             return new $class;
         }
 
+        //Si tiene verificar cuales son los parametros del contructior
         $parameters = $constructor->getParameters();
 
         $dependencies = [];
 
         foreach ($parameters as $parameter) {
+            //Obtener el tipo del parametro
             $type = $parameter->getType();
 
+            //Si no lo puede resolver
             if (!$type || $type->isBuiltin()) {
-                throw new Exception("Cannot auto-resolve {$type->getName()}");
+                throw new Exception("This type cannot be resolved {$type->getName()}");
             }
 
+            //Llamar recursivamente esta funcion pasando el nombre del tipo de parametro y guardarla en array despendencies
             $dependencies[] = $this->resolve($type->getName());
         }
 
+        //retornar resultado
         return $reflector->newInstanceArgs($dependencies);
-
     }
 
-        public function make($key)
+    public function make($key)
     {
         if (isset($this->instances[$key])) {
             return $this->instances[$key];
@@ -75,47 +72,32 @@ class Container
     }
 }
 
-// Interfaces
-interface NotificationInterface
+class Config
 {
-    public function send($message);
-}
+    private $settings = ['app_name' => 'Mi app'];
 
-// Implementaciones
-class EmailNotification implements NotificationInterface
-{
-    public function send($message)
+    public function get($key)
     {
-        echo "📧 Email: $message\n";
+        return $this->settings[$key] ?? null;
     }
 }
 
-class SmsNotification implements NotificationInterface
+class Database
 {
-    public function send($message)
+    public function __construct(private Config $config)
     {
-        echo "📱 SMS: $message\n";
+        echo "Database conectado para: " . $config->get('app_name') . "\n";
     }
 }
 
-// Servicio que usa notificación
 class UserService
 {
-    private $notifier;
-
-    public function __construct(NotificationInterface $notifier)
-    {
-        $this->notifier = $notifier;
-    }
-
-    public function registerUser($name)
-    {
-        echo "Registrando usuario: $name\n";
-        $this->notifier->send("Bienvenido $name!");
+    public function __construct(private Database $database){
+        echo "UserService iniciado\n";
     }
 }
 
 $container = new Container();
-$container->bind(NotificationInterface::class, fn() => new SmsNotification());
-$userService = $container->make(UserService::class);
-$userService->registerUser('Adrian');
+
+$container->make(UserService::class);
+
