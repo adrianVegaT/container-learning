@@ -47,7 +47,7 @@ class Container
                 throw new Exception("Cannot auto-resolve {$type->getName()}");
             }
 
-            $dependencies[] = $this->resolve($type->getName());
+            $dependencies[] = $this->make($type->getName());
         }
 
         return $reflector->newInstanceArgs($dependencies);
